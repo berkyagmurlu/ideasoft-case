@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\DiscountController;
+use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -26,6 +27,7 @@ Route::prefix('v1')->group(function () {
             Route::post('logout', [AuthController::class, 'logout']);
             Route::post('refresh', [AuthController::class, 'refresh']);
             Route::get('me', [AuthController::class, 'me']);
+            Route::get('users', [AuthController::class, 'users']);
         });
 
         // Category routes
@@ -40,7 +42,7 @@ Route::prefix('v1')->group(function () {
             Route::get('/', [OrderController::class, 'index']);
             Route::post('/', [OrderController::class, 'store']);
             Route::get('/{id}', [OrderController::class, 'show']);
-            Route::patch('/{id}/status', [OrderController::class, 'updateStatus']);
+            Route::put('/{id}/status', [OrderController::class, 'updateStatus']);
         });
 
         // Discount routes

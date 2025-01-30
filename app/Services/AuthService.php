@@ -18,11 +18,17 @@ class AuthService implements AuthServiceInterface
 
     public function login(array $credentials): ?string
     {
-        if (!$token = Auth::attempt($credentials)) {
+        if (!Auth::attempt($credentials)) {
             return null;
         }
 
-        return $token;
+        $user = Auth::user();
+        
+        // Önceki tokenları temizle
+        $user->tokens()->delete();
+        
+        // Yeni Sanctum token oluştur
+        return $user->createToken('auth-token')->plainTextToken;
     }
 
     public function register(array $data): User
@@ -38,7 +44,16 @@ class AuthService implements AuthServiceInterface
 
     public function refresh(): ?string
     {
-        return Auth::refresh();
+        $user = Auth::user();
+        if (!$user) {
+            return null;
+        }
+        
+        // Önceki tokenları temizle
+        $user->tokens()->delete();
+        
+        // Yeni token oluştur
+        return $user->createToken('auth-token')->plainTextToken;
     }
 
     public function me(): ?User

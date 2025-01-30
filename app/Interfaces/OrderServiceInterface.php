@@ -10,6 +10,6 @@ interface OrderServiceInterface
     public function calculateDiscounts(Order $order): array;
     public function getUserOrders(int $userId): Collection;
     public function getOrderDetails(int $orderId): ?Order;
-    public function updateOrderStatus(int $orderId, string $status): bool;
     public function validateStock(array $items): bool;
+    public function updateStatus(int $id, string $status): ?Order;
 }

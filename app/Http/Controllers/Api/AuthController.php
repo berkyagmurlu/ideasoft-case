@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Interfaces\AuthServiceInterface;
+use App\Interfaces\UserServiceInterface;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -17,10 +18,14 @@ use Illuminate\Http\JsonResponse;
 class AuthController extends Controller
 {
     protected AuthServiceInterface $authService;
+    protected UserServiceInterface $userService;
 
-    public function __construct(AuthServiceInterface $authService)
-    {
+    public function __construct(
+        AuthServiceInterface $authService,
+        UserServiceInterface $userService
+    ) {
         $this->authService = $authService;
+        $this->userService = $userService;
     }
 
     /**
@@ -243,6 +248,67 @@ class AuthController extends Controller
         return response()->json([
             'success' => true,
             'user' => $this->authService->me()
+        ]);
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/v1/auth/users",
+     *     summary="List all users",
+     *     description="Get paginated list of all users",
+     *     operationId="listUsers",
+     *     tags={"Authentication"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="page",
+     *         in="query",
+     *         description="Page number",
+     *         required=false,
+     *         @OA\Schema(type="integer", default=1)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="current_page", type="integer", example=1),
+     *                 @OA\Property(property="data", type="array",
+     *                     @OA\Items(type="object",
+     *                         @OA\Property(property="id", type="integer", example=1),
+     *                         @OA\Property(property="name", type="string", example="John Doe"),
+     *                         @OA\Property(property="email", type="string", format="email", example="john@example.com"),
+     *                         @OA\Property(property="created_at", type="string", format="date-time")
+     *                     )
+     *                 ),
+     *                 @OA\Property(property="first_page_url", type="string"),
+     *                 @OA\Property(property="from", type="integer"),
+     *                 @OA\Property(property="last_page", type="integer"),
+     *                 @OA\Property(property="last_page_url", type="string"),
+     *                 @OA\Property(property="links", type="array", @OA\Items(type="object")),
+     *                 @OA\Property(property="next_page_url", type="string"),
+     *                 @OA\Property(property="path", type="string"),
+     *                 @OA\Property(property="per_page", type="integer"),
+     *                 @OA\Property(property="prev_page_url", type="string"),
+     *                 @OA\Property(property="to", type="integer"),
+     *                 @OA\Property(property="total", type="integer")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Unauthenticated")
+     *         )
+     *     )
+     * )
+     */
+    public function users(): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'data' => $this->userService->getAllUsers()
         ]);
     }
 } 

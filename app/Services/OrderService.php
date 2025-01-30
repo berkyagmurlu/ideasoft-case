@@ -88,11 +88,6 @@ class OrderService implements OrderServiceInterface
         return $this->orderRepository->findWithItems($orderId);
     }
 
-    public function updateOrderStatus(int $orderId, string $status): bool
-    {
-        return $this->orderRepository->updateStatus($orderId, $status);
-    }
-
     public function validateStock(array $items): bool
     {
         foreach ($items as $item) {
@@ -101,5 +96,10 @@ class OrderService implements OrderServiceInterface
             }
         }
         return true;
+    }
+
+    public function updateStatus(int $id, string $status): ?Order
+    {
+        return $this->orderRepository->updateStatus($id, $status);
     }
 }

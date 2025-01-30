@@ -14,10 +14,6 @@ use Illuminate\Routing\Controller as BaseController;
  *     @OA\Contact(
  *         email="berkyagmurlu@gmail.com",
  *         name="Berk Yağmurlu"
- *     ),
- *     @OA\License(
- *         name="MIT",
- *         url="https://opensource.org/licenses/MIT"
  *     )
  * )
  * 

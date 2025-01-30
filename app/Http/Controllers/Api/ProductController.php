@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Product\StoreProductRequest;
+use App\Http\Requests\Product\UpdateProductRequest;
 use App\Interfaces\ProductRepositoryInterface;
 use Illuminate\Http\JsonResponse;
 
@@ -272,7 +273,7 @@ class ProductController extends Controller
      *     )
      * )
      */
-    public function update(StoreProductRequest $request, int $id): JsonResponse
+    public function update(UpdateProductRequest $request, int $id): JsonResponse
     {
         $updated = $this->productRepository->update($id, $request->validated());
 

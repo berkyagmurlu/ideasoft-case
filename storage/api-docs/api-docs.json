@@ -7,10 +7,6 @@
             "name": "Berk Yağmurlu",
             "email": "berkyagmurlu@gmail.com"
         },
-        "license": {
-            "name": "MIT",
-            "url": "https://opensource.org/licenses/MIT"
-        },
         "version": "1.0.0"
     },
     "servers": [
@@ -422,6 +418,137 @@
                 ]
             }
         },
+        "/api/v1/auth/users": {
+            "get": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "List all users",
+                "description": "Get paginated list of all users",
+                "operationId": "listUsers",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "example": "John Doe"
+                                                            },
+                                                            "email": {
+                                                                "type": "string",
+                                                                "format": "email",
+                                                                "example": "john@example.com"
+                                                            },
+                                                            "created_at": {
+                                                                "type": "string",
+                                                                "format": "date-time"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "first_page_url": {
+                                                    "type": "string"
+                                                },
+                                                "from": {
+                                                    "type": "integer"
+                                                },
+                                                "last_page": {
+                                                    "type": "integer"
+                                                },
+                                                "last_page_url": {
+                                                    "type": "string"
+                                                },
+                                                "links": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "next_page_url": {
+                                                    "type": "string"
+                                                },
+                                                "path": {
+                                                    "type": "string"
+                                                },
+                                                "per_page": {
+                                                    "type": "integer"
+                                                },
+                                                "prev_page_url": {
+                                                    "type": "string"
+                                                },
+                                                "to": {
+                                                    "type": "integer"
+                                                },
+                                                "total": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/v1/categories": {
             "get": {
                 "tags": [
@@ -517,10 +644,6 @@
                                     "name": {
                                         "type": "string",
                                         "example": "Electronics"
-                                    },
-                                    "description": {
-                                        "type": "string",
-                                        "example": "Electronic devices and accessories"
                                     }
                                 },
                                 "type": "object"
@@ -548,10 +671,6 @@
                                                 "name": {
                                                     "type": "string",
                                                     "example": "Electronics"
-                                                },
-                                                "description": {
-                                                    "type": "string",
-                                                    "example": "Electronic devices and accessories"
                                                 },
                                                 "created_at": {
                                                     "type": "string",
@@ -657,10 +776,6 @@
                                                 "name": {
                                                     "type": "string",
                                                     "example": "Electronics"
-                                                },
-                                                "description": {
-                                                    "type": "string",
-                                                    "example": "Electronic devices and accessories"
                                                 },
                                                 "created_at": {
                                                     "type": "string",
@@ -790,10 +905,6 @@
                                     "name": {
                                         "type": "string",
                                         "example": "Electronics"
-                                    },
-                                    "description": {
-                                        "type": "string",
-                                        "example": "Electronic devices and accessories"
                                     }
                                 },
                                 "type": "object"
@@ -821,10 +932,6 @@
                                                 "name": {
                                                     "type": "string",
                                                     "example": "Electronics"
-                                                },
-                                                "description": {
-                                                    "type": "string",
-                                                    "example": "Electronic devices and accessories"
                                                 },
                                                 "created_at": {
                                                     "type": "string",
@@ -2375,14 +2482,14 @@
                 ]
             }
         },
-        "/api/v1/orders/{id}/status/{status}": {
+        "/api/v1/orders/{id}/status": {
             "put": {
                 "tags": [
                     "Orders"
                 ],
                 "summary": "Update order status",
                 "description": "Update the status of an existing order",
-                "operationId": "orderUpdateStatus",
+                "operationId": "updateOrderStatus",
                 "parameters": [
                     {
                         "name": "id",
@@ -2393,23 +2500,34 @@
                             "type": "integer",
                             "format": "int64"
                         }
-                    },
-                    {
-                        "name": "status",
-                        "in": "path",
-                        "description": "New status for the order",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "enum": [
-                                "pending",
-                                "processing",
-                                "completed",
-                                "cancelled"
-                            ]
-                        }
                     }
                 ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "status"
+                                ],
+                                "properties": {
+                                    "status": {
+                                        "description": "New status for the order",
+                                        "type": "string",
+                                        "enum": [
+                                            "pending",
+                                            "processing",
+                                            "completed",
+                                            "declined"
+                                        ],
+                                        "example": "processing"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "200": {
                         "description": "Order status updated successfully",
@@ -2424,6 +2542,23 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Order status updated successfully"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "status": {
+                                                    "type": "string",
+                                                    "example": "processing"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
@@ -2451,8 +2586,8 @@
                             }
                         }
                     },
-                    "403": {
-                        "description": "Unauthorized",
+                    "422": {
+                        "description": "Validation error",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2463,23 +2598,10 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Unauthorized"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthenticated",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Unauthenticated"
+                                            "example": "Invalid status value"
+                                        },
+                                        "errors": {
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"

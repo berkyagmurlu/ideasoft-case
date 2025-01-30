@@ -4,9 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Order\StoreOrderRequest;
+use App\Http\Requests\Order\UpdateOrderStatusRequest;
 use App\Interfaces\OrderServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 /**
  * @OA\Tag(
@@ -270,10 +273,10 @@ class OrderController extends Controller
 
     /**
      * @OA\Put(
-     *     path="/api/v1/orders/{id}/status/{status}",
+     *     path="/api/v1/orders/{id}/status",
      *     summary="Update order status",
      *     description="Update the status of an existing order",
-     *     operationId="orderUpdateStatus",
+     *     operationId="updateOrderStatus",
      *     tags={"Orders"},
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
@@ -283,19 +286,30 @@ class OrderController extends Controller
      *         required=true,
      *         @OA\Schema(type="integer", format="int64")
      *     ),
-     *     @OA\Parameter(
-     *         name="status",
-     *         in="path",
-     *         description="New status for the order",
+     *     @OA\RequestBody(
      *         required=true,
-     *         @OA\Schema(type="string", enum={"pending", "processing", "completed", "cancelled"})
+     *         @OA\JsonContent(
+     *             required={"status"},
+     *             @OA\Property(
+     *                 property="status",
+     *                 type="string",
+     *                 enum={"pending", "processing", "completed", "declined"},
+     *                 example="processing",
+     *                 description="New status for the order"
+     *             )
+     *         )
      *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Order status updated successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Order status updated successfully")
+     *             @OA\Property(property="message", type="string", example="Order status updated successfully"),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="status", type="string", example="processing"),
+     *                 @OA\Property(property="updated_at", type="string", format="date-time")
+     *             )
      *         )
      *     ),
      *     @OA\Response(
@@ -307,25 +321,19 @@ class OrderController extends Controller
      *         )
      *     ),
      *     @OA\Response(
-     *         response=403,
-     *         description="Unauthorized",
+     *         response=422,
+     *         description="Validation error",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Unauthorized")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=401,
-     *         description="Unauthenticated",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Unauthenticated")
+     *             @OA\Property(property="message", type="string", example="Invalid status value"),
+     *             @OA\Property(property="errors", type="object")
      *         )
      *     )
      * )
      */
-    public function updateStatus(int $id, string $status): JsonResponse
+    public function updateStatus(UpdateOrderStatusRequest $request, int $id): JsonResponse
     {
-        $order = $this->orderService->getOrderDetails($id);
+        $order = $this->orderService->updateStatus($id, $request->status);
 
         if (!$order) {
             return response()->json([
@@ -334,19 +342,14 @@ class OrderController extends Controller
             ], 404);
         }
 
-        // Check if the order belongs to the authenticated user
-        if ($order->user_id !== Auth::id()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized'
-            ], 403);
-        }
-
-        $updated = $this->orderService->updateOrderStatus($id, $status);
-
         return response()->json([
             'success' => true,
-            'message' => 'Order status updated successfully'
+            'message' => 'Order status updated successfully',
+            'data' => [
+                'id' => $order->id,
+                'status' => $order->status,
+                'updated_at' => $order->updated_at
+            ]
         ]);
     }
 } 

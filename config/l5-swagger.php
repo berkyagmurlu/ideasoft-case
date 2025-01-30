@@ -314,5 +314,9 @@ return [
         'constants' => [
             'L5_SWAGGER_CONST_HOST' => env('L5_SWAGGER_CONST_HOST', 'http://my-default-host.com'),
         ],
+        'swagger_ui_config' => [
+            'persist_authorization' => true,
+            'display_operation_id' => true,
+        ],
     ],
 ];

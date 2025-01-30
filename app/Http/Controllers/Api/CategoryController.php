@@ -75,8 +75,7 @@ class CategoryController extends Controller
      *         required=true,
      *         @OA\JsonContent(
      *             required={"name"},
-     *             @OA\Property(property="name", type="string", example="Electronics"),
-     *             @OA\Property(property="description", type="string", example="Electronic devices and accessories")
+     *             @OA\Property(property="name", type="string", example="Electronics")
      *         )
      *     ),
      *     @OA\Response(
@@ -87,7 +86,6 @@ class CategoryController extends Controller
      *             @OA\Property(property="data", type="object",
      *                 @OA\Property(property="id", type="integer", example=1),
      *                 @OA\Property(property="name", type="string", example="Electronics"),
-     *                 @OA\Property(property="description", type="string", example="Electronic devices and accessories"),
      *                 @OA\Property(property="created_at", type="string", format="date-time"),
      *                 @OA\Property(property="updated_at", type="string", format="date-time")
      *             )
@@ -144,7 +142,6 @@ class CategoryController extends Controller
      *             @OA\Property(property="data", type="object",
      *                 @OA\Property(property="id", type="integer", example=1),
      *                 @OA\Property(property="name", type="string", example="Electronics"),
-     *                 @OA\Property(property="description", type="string", example="Electronic devices and accessories"),
      *                 @OA\Property(property="created_at", type="string", format="date-time"),
      *                 @OA\Property(property="updated_at", type="string", format="date-time"),
      *                 @OA\Property(property="products", type="array",
@@ -214,8 +211,7 @@ class CategoryController extends Controller
      *         required=true,
      *         @OA\JsonContent(
      *             required={"name"},
-     *             @OA\Property(property="name", type="string", example="Electronics"),
-     *             @OA\Property(property="description", type="string", example="Electronic devices and accessories")
+     *             @OA\Property(property="name", type="string", example="Electronics")
      *         )
      *     ),
      *     @OA\Response(
@@ -226,7 +222,6 @@ class CategoryController extends Controller
      *             @OA\Property(property="data", type="object",
      *                 @OA\Property(property="id", type="integer", example=1),
      *                 @OA\Property(property="name", type="string", example="Electronics"),
-     *                 @OA\Property(property="description", type="string", example="Electronic devices and accessories"),
      *                 @OA\Property(property="created_at", type="string", format="date-time"),
      *                 @OA\Property(property="updated_at", type="string", format="date-time")
      *             )
