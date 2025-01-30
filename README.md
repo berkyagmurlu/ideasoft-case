@@ -1,7 +1,5 @@
 # IdeaSoft Case Study - E-commerce API
 
-Bu proje, e-ticaret sistemlerinde kullanılabilecek temel özellikleri içeren bir REST API uygulamasıdır. Laravel 11 ve PHP 8.3 kullanılarak geliştirilmiştir.
-
 ## Özellikler
 
 - JWT tabanlı kimlik doğrulama
@@ -36,33 +34,22 @@ Bu proje, e-ticaret sistemlerinde kullanılabilecek temel özellikleri içeren b
 
 ### Adımlar
 
-1. Projeyi klonlayın:
+1. Docker containerlarını başlatın:
 ```bash
-git clone https://github.com/yourusername/ideasoft-case.git
-cd ideasoft-case
+docker-compose up -d --build
 ```
 
-2. Ortam değişkenlerini ayarlayın:
-```bash
-cp .env.example .env
-```
-
-3. Docker containerlarını başlatın:
-```bash
-docker compose up -d
-```
-
-4. Bağımlılıkları yükleyin:
+2. Bağımlılıkları yükleyin:
 ```bash
 docker compose exec app composer install
 ```
 
-5. Veritabanını oluşturun:
+3. Veritabanını oluşturun:
 ```bash
 docker compose exec app php artisan migrate --seed
 ```
 
-6. JWT secret key oluşturun:
+4. JWT secret key oluşturun:
 ```bash
 docker compose exec app php artisan jwt:secret
 ```
@@ -91,12 +78,10 @@ Collection'ı kullanmak için:
 1. Admin Kullanıcı:
    - Email: admin@example.com
    - Şifre: password
-   - Özellikler: 2 yıllık üye, 15,000$ toplam gelir
 
 2. Test Kullanıcı:
    - Email: test@example.com
    - Şifre: password
-   - Özellikler: 1 yıllık üye, 5,000$ toplam gelir
 
 ## İndirim Sistemi
 
@@ -180,7 +165,3 @@ Testleri çalıştırmak için:
 ```bash
 docker compose exec app php artisan test
 ```
-
-## Lisans
-
-Bu proje MIT lisansı altında lisanslanmıştır. Detaylar için [LICENSE](LICENSE) dosyasına bakınız.
