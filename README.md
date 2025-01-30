@@ -2,7 +2,7 @@
 
 ## Özellikler
 
-- JWT tabanlı kimlik doğrulama
+- Laravel Sanctum Kimlik Doğrulama
 - Kategori yönetimi
 - Ürün yönetimi
 - Sipariş işlemleri
@@ -21,7 +21,7 @@
 - Laravel 11
 - MySQL 8.0
 - Docker & Docker Compose
-- JWT Authentication
+- Laravel Sanctum Authentication
 - Swagger/OpenAPI
 - PHPUnit
 
