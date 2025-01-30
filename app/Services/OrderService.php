@@ -60,14 +60,7 @@ class OrderService implements OrderServiceInterface
                 'status' => 'pending'
             ], $orderItems);
 
-            // Calculate and apply discounts
-            $discounts = $this->calculateDiscounts($order);
-
-            // Update order with discounts
-            $this->orderRepository->update($order->id, [
-                'discount_amount' => $discounts['total_discount'],
-                'final_amount' => $totalAmount - $discounts['total_discount']
-            ]);
+            $this->applyDiscounts($order);
 
             return $this->orderRepository->findWithItems($order->id);
         });
@@ -76,6 +69,11 @@ class OrderService implements OrderServiceInterface
     public function calculateDiscounts(Order $order): array
     {
         return $this->discountService->calculateOrderDiscounts($order);
+    }
+
+    public function applyDiscounts(Order $order): void
+    {
+        $this->discountService->applyDiscounts($order);
     }
 
     public function getUserOrders(int $userId): Collection

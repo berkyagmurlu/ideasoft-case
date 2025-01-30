@@ -1852,7 +1852,7 @@
                 ]
             }
         },
-        "/api/v1/discounts/calculate/{orderId}": {
+        "/api/v1/orders/{order}/discounts": {
             "get": {
                 "tags": [
                     "Discounts"
@@ -1862,7 +1862,7 @@
                 "operationId": "calculateDiscount",
                 "parameters": [
                     {
-                        "name": "orderId",
+                        "name": "order",
                         "in": "path",
                         "description": "ID of order to calculate discounts for",
                         "required": true,

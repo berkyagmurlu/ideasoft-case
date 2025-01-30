@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Discount\StoreDiscountRequest;
+use App\Interfaces\DiscountRepositoryInterface;
 use App\Interfaces\DiscountServiceInterface;
+use App\Interfaces\OrderRepositoryInterface;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -16,10 +18,14 @@ use Illuminate\Http\JsonResponse;
 final class DiscountController extends Controller
 {
     protected DiscountServiceInterface $discountService;
+    protected DiscountRepositoryInterface $discountRepository;
+    protected OrderRepositoryInterface $orderRepository;
 
-    public function __construct(DiscountServiceInterface $discountService)
+    public function __construct(DiscountServiceInterface $discountService, DiscountRepositoryInterface $discountRepository, OrderRepositoryInterface $orderRepository)
     {
         $this->discountService = $discountService;
+        $this->discountRepository = $discountRepository;
+        $this->orderRepository = $orderRepository;
     }
 
     /**
@@ -39,7 +45,7 @@ final class DiscountController extends Controller
      *                 @OA\Items(
      *                     @OA\Property(property="id", type="integer", example=1),
      *                     @OA\Property(property="name", type="string", example="Summer Sale"),
-     *                     @OA\Property(property="type", type="string", enum={"total_amount", "category_quantity", "category_multiple"}, example="total_amount"),
+     *                     @OA\Property(property="type", type="string", enum={"total_amount", "category_quantity", "category_multiple", "user_revenue", "membership_duration"}, example="total_amount"),
      *                     @OA\Property(property="category_id", type="integer", nullable=true, example=1),
      *                     @OA\Property(property="min_amount", type="number", format="float", nullable=true, example=1000),
      *                     @OA\Property(property="min_quantity", type="integer", nullable=true, example=3),
@@ -65,7 +71,7 @@ final class DiscountController extends Controller
     {
         return response()->json([
             'success' => true,
-            'data' => $this->discountService->getAllDiscounts()
+            'data' => $this->discountService->getActiveDiscounts()
         ]);
     }
 
@@ -131,7 +137,7 @@ final class DiscountController extends Controller
      */
     public function store(StoreDiscountRequest $request): JsonResponse
     {
-        $discount = $this->discountService->createDiscount($request->validated());
+        $discount = $this->discountRepository->create($request->validated());
 
         return response()->json([
             'success' => true,
@@ -193,7 +199,7 @@ final class DiscountController extends Controller
      */
     public function show(int $id): JsonResponse
     {
-        $discount = $this->discountService->getDiscountById($id);
+        $discount = $this->discountRepository->find($id);
 
         if (!$discount) {
             return response()->json([
@@ -285,7 +291,7 @@ final class DiscountController extends Controller
      */
     public function update(StoreDiscountRequest $request, int $id): JsonResponse
     {
-        $discount = $this->discountService->getDiscountById($id);
+        $discount = $this->discountRepository->find($id);
 
         if (!$discount) {
             return response()->json([
@@ -294,7 +300,7 @@ final class DiscountController extends Controller
             ], 404);
         }
 
-        $updated = $this->discountService->updateDiscount($id, $request->validated());
+        $updated = $this->discountRepository->update($id, $request->validated());
 
         return response()->json([
             'success' => true,
@@ -344,7 +350,7 @@ final class DiscountController extends Controller
      */
     public function destroy(int $id): JsonResponse
     {
-        $discount = $this->discountService->getDiscountById($id);
+        $discount = $this->discountRepository->find($id);
 
         if (!$discount) {
             return response()->json([
@@ -363,14 +369,14 @@ final class DiscountController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/v1/discounts/calculate/{orderId}",
+     *     path="/api/v1/orders/{order}/discounts",
      *     summary="Calculate order discounts",
      *     description="Calculate applicable discounts for a specific order",
      *     operationId="calculateDiscount",
      *     tags={"Discounts"},
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
-     *         name="orderId",
+     *         name="order",
      *         in="path",
      *         description="ID of order to calculate discounts for",
      *         required=true,
@@ -405,9 +411,18 @@ final class DiscountController extends Controller
      *     )
      * )
      */
-    public function calculateDiscount(int $orderId): JsonResponse
+    public function calculateDiscount(int $order): JsonResponse
     {
-        $discounts = $this->discountService->calculateOrderDiscounts($orderId);
+        $model = $this->orderRepository->find($order);
+
+        if (!$model) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Order not found'
+            ], 404);
+        }
+
+        $discounts = $this->discountService->calculateOrderDiscounts($model);
 
         return response()->json([
             'success' => true,

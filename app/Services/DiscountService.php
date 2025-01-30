@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Collection;
 use App\Models\Discount;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class DiscountService implements DiscountServiceInterface
 {
@@ -123,36 +124,96 @@ class DiscountService implements DiscountServiceInterface
             'total_discount' => 0
         ];
 
-        // Total amount discount
-        $totalAmountDiscount = $this->calculateTotalAmountDiscount($order->total_amount);
-        if ($totalAmountDiscount > 0) {
-            $discounts['discounts'][] = [
-                'type' => 'total_amount',
-                'amount' => $totalAmountDiscount
-            ];
-            $discounts['total_discount'] += $totalAmountDiscount;
-        }
+        // Get all active discounts
+        $activeDiscounts = $this->discountRepository->findActive();
+        $totalAmount = $order->total_amount;
+        $user = $order->user;
+        $items = $order->items;
 
-        // Category based discounts
-        $categoryItems = [];
-        foreach ($order->items as $item) {
-            $categoryId = $item->product->category_id;
-            if (!isset($categoryItems[$categoryId])) {
-                $categoryItems[$categoryId] = [];
+        foreach ($activeDiscounts as $discount) {
+            $discountAmount = 0;
+
+            switch ($discount->type) {
+                case 'total_amount':
+                    if ($totalAmount >= $discount->min_amount) {
+                        $discountAmount = $totalAmount * ($discount->discount_rate / 100);
+                        $discounts['discounts'][] = [
+                            'discount_id' => $discount->id,
+                            'name' => $discount->name,
+                            'type' => $discount->type,
+                            'amount' => $discountAmount
+                        ];
+                        $discounts['total_discount'] += $discountAmount;
+                    }
+                    break;
+
+                case 'category_quantity':
+                    $categoryItems = $items->where('product.category_id', $discount->category_id);
+                    $categoryItemCount = $categoryItems->sum('quantity');
+
+                    if ($categoryItemCount >= $discount->min_quantity) {
+                        $freeItemsCount = floor($categoryItemCount / $discount->min_quantity) * $discount->free_items;
+                        $cheapestItems = $categoryItems->sortBy('unit_price')->take($freeItemsCount);
+                        $discountAmount = $cheapestItems->sum('unit_price');
+                        $discounts['discounts'][] = [
+                            'discount_id' => $discount->id,
+                            'name' => $discount->name,
+                            'type' => $discount->type,
+                            'amount' => $discountAmount
+                        ];
+                        $discounts['total_discount'] += $discountAmount;
+                    }
+                    break;
+
+                case 'category_multiple':
+                    $categoryItems = $items->where('product.category_id', $discount->category_id);
+                    $categoryTotal = $categoryItems->sum('total_price');
+
+                    if ($categoryTotal > 0) {
+                        $discountAmount = $categoryTotal * ($discount->discount_rate / 100);
+                        $discounts['discounts'][] = [
+                            'discount_id' => $discount->id,
+                            'name' => $discount->name,
+                            'type' => $discount->type,
+                            'amount' => $discountAmount
+                        ];
+                        $discounts['total_discount'] += $discountAmount;
+                    }
+                    break;
+
+                case 'user_revenue':
+                    if ($user->revenue >= $discount->user_revenue_min) {
+                        $discountAmount = $totalAmount * ($discount->discount_rate / 100);
+                        $discounts['discounts'][] = [
+                            'discount_id' => $discount->id,
+                            'name' => $discount->name,
+                            'type' => $discount->type,
+                            'amount' => $discountAmount
+                        ];
+                        $discounts['total_discount'] += $discountAmount;
+                    }
+                    break;
+
+                case 'membership_duration':
+                    $membershipMonths = Carbon::parse($user->since)->diffInMonths(now());
+                    if ($membershipMonths >= $discount->membership_months_min) {
+                        $discountAmount = $totalAmount * ($discount->discount_rate / 100);
+                        $discounts['discounts'][] = [
+                            'discount_id' => $discount->id,
+                            'name' => $discount->name,
+                            'type' => $discount->type,
+                            'amount' => $discountAmount
+                        ];
+                        $discounts['total_discount'] += $discountAmount;
+                    }
+                    break;
             }
-            $categoryItems[$categoryId][] = [
-                'product_id' => $item->product_id,
-                'quantity' => $item->quantity,
-                'unit_price' => $item->unit_price,
-                'total_price' => $item->total_price
-            ];
         }
 
-        foreach ($categoryItems as $categoryId => $items) {
-            $categoryDiscounts = $this->calculateCategoryDiscounts($categoryId, $items);
-            $discounts['discounts'] = array_merge($discounts['discounts'], $categoryDiscounts['discounts']);
-            $discounts['total_discount'] += $categoryDiscounts['total_discount'];
-        }
+        // Add order totals to response
+        $discounts['total_amount'] = $totalAmount;
+        $discounts['final_amount'] = $totalAmount - $discounts['total_discount'];
+        $discounts['discount_amount'] = $discounts['total_discount'];
 
         return $discounts;
     }
@@ -221,5 +282,21 @@ class DiscountService implements DiscountServiceInterface
         }
 
         return 0;
+    }
+
+    public function deleteDiscount(int $id): bool
+    {
+        $discount = $this->discountRepository->find($id);
+        
+        if (!$discount) {
+            return false;
+        }
+        
+        DB::transaction(function () use ($discount) {
+            // İndirim kaydını sil
+            $discount->delete();
+        });
+        
+        return true;
     }
 }
