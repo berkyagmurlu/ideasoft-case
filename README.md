@@ -49,9 +49,9 @@ docker compose exec app composer install
 docker compose exec app php artisan migrate --seed
 ```
 
-4. JWT secret key oluşturun:
+4. Swagger dökümanını generate edelim:
 ```bash
-docker compose exec app php artisan jwt:secret
+docker compose exec app php artisan l5-swagger:generate
 ```
 
 ## API Dokümantasyonu
